@@ -5,17 +5,31 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Models\User;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use App\Repositories\Repository;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 
 class AuthController extends Controller
 {
+    use AuthenticatesUsers;
 
-    // space that we can use the repository from
+    /**
+     * The maximum number of attempts to allow.
+     *
+     * @return int
+     */
+    protected $maxAttempts = 5;
+
+
+    /**
+     * The number of minutes to throttle for.
+     *
+     * @return int
+     */
+    protected $decayMinutes = 5;
+
     protected $model;
 
     public function __construct(User $user)
@@ -52,11 +66,19 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
         if($validated) {
-            $credentials = $request->only(['email', 'password']);
-            if (!$token = auth()->attempt($credentials)) {
-                return response()->json(['error' => 'Unauthorized'], 401);
+
+            if ($this->hasTooManyLoginAttempts($request)) {
+                $this->fireLockoutEvent($request);
+
+                return $this->sendLockoutResponse($request);
             }
 
+            $credentials = $request->only(['email', 'password']);
+            if (!$token = auth()->attempt($credentials)) {
+                $this->incrementLoginAttempts($request);
+                return response()->json(['error' => 'Incorrect username or password'], 401);
+            }
+            $this->clearLoginAttempts($request);
             return $this->respond_with_token($token);
         }
         return $validated;
@@ -81,4 +103,21 @@ class AuthController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 60
         ]);
     }
+
+
+//    /**
+//     * Determine if the user has too many failed login attempts.
+//     *
+//     * @param  \Illuminate\Http\Request  $request
+//     * @return bool
+//     */
+//    protected function hasTooManyLoginAttempts(Request $request)
+//    {
+//        $maxLoginAttempts = 5;
+//        $lockoutTime = 2; // In minutes
+//
+//        return $this->limiter()->tooManyAttempts(
+//            $this->throttleKey($request), $maxLoginAttempts, $lockoutTime
+//        );
+//    }
 }
