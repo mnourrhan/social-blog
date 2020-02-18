@@ -18,3 +18,8 @@ Route::group(['middleware' => ['api']], function () {
     Route::post('register', 'AuthController@register')->name('api.register');
     Route::post('login', 'AuthController@login')->name('api.login');
 });
+
+
+Route::group(['middleware' => ['api','auth']], function () {
+    Route::post('/tweet/create', 'TweetController@store')->name('tweet.create');
+});

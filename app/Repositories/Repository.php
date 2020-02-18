@@ -54,4 +54,9 @@ class Repository implements RepositoryInterface
     {
         return $this->model->with($relations);
     }
+
+    public function find($id)
+    {
+        return $this->model->find($id);
+    }
 }
