@@ -22,4 +22,5 @@ Route::group(['middleware' => ['api']], function () {
 
 Route::group(['middleware' => ['api','auth']], function () {
     Route::post('/tweet/create', 'TweetController@store')->name('tweet.create');
+    Route::post('/tweet/delete/{id}', 'TweetController@delete')->name('tweet.delete');
 });

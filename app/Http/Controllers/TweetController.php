@@ -29,4 +29,15 @@ class TweetController extends Controller
         }
         return $validated;
     }
+
+    public function delete($id){
+        $tweet = $this->model->find($id);
+        if(auth()->user()->id == $tweet->user_id){
+            $this->model->delete($id);
+            return response()->json(['success' =>  'Tweet successfully deleted!', 'code' => 200], 200);
+        }else {
+            return response()->json(['errors' =>  'Permission Denied! You are not authorized to preform this action.',
+                'code' => 402], 402);
+        }
+    }
 }
