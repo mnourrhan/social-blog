@@ -30,33 +30,6 @@ class User extends Authenticatable implements JWTSubject
         'password',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'date_of_birth' => 'date',
-    ];
-
-    public static $rules = array(
-        'name' => 'required',
-        'email'  => 'required|unique:users',
-        'password'  => 'required',
-        'birth_date'  => 'required',
-        'image_name' => 'required|mimes:jpeg,png',
-    );
-
-    public function validate($data)
-    {
-        // make a new validator object
-        $v = Validator::make($data, $this->rules);
-        // return the result
-        return $v->passes();
-    }
-
-
-
     public function getJWTIdentifier()
     {
         return $this->getKey();
