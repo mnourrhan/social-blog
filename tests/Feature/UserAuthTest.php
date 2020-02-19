@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class AuthTest extends TestCase
+class UserAuthTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, ArraySubsetAsserts;
+
 
     /** @test */
     public function it_user_can_successfully_register()
@@ -22,7 +24,8 @@ class AuthTest extends TestCase
 
         $response = $this->json('POST', route('api.register'), $data);
         $response->assertStatus(200);
-        $this->assertArrayHasKey('access_token', $response->json());
+        $this->assertArraySubset(['status' => 'success'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
 
@@ -41,8 +44,9 @@ class AuthTest extends TestCase
         $this->json('POST',route('api.register'),$data);
         $response = $this->json('POST',route('api.register'),$data);
 
-        $response->assertStatus(422);
-        $this->assertArrayHasKey('errors',$response->json());
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -59,8 +63,9 @@ class AuthTest extends TestCase
         //register with empty email
         $response = $this->json('POST',route('api.register'),$data);
 
-        $response->assertStatus(422);
-        $this->assertArrayHasKey('errors',$response->json());
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -77,8 +82,9 @@ class AuthTest extends TestCase
         //register with empty email
         $response = $this->json('POST',route('api.register'),$data);
 
-        $response->assertStatus(422);
-        $this->assertArrayHasKey('errors',$response->json());
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -96,6 +102,7 @@ class AuthTest extends TestCase
         $response->assertStatus(200);
         $user = User::where('email', 'test@gmail.com')->first();
         $this->assertNotNull($user->age);
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -114,8 +121,8 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertArrayHasKey('access_token', $response->json());
-
+        $this->assertArraySubset(['status' => 'success'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -133,8 +140,29 @@ class AuthTest extends TestCase
             'password' => '',
         ]);
 
-        $response->assertStatus(422);
-        $this->assertArrayHasKey('errors', $response->json());
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
+    }
 
+
+    /** @test */
+    public function it_invalid_password_when_login()
+    {
+        $user = factory(User::class)->create([
+            'name' => 'test',
+            'email'=>'test@gmail.com',
+            'password' => 'secret1234',
+            'birth_date' => '1990-10-09',
+        ]);
+
+        $response = $this->json('POST',route('api.login'),[
+            'email' => 'test@gmail.com',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 }

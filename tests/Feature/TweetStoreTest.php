@@ -3,12 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class TweetStoreTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, ArraySubsetAsserts;
 
     protected function authenticate(){
         $user = factory(User::class)->create([
@@ -23,7 +24,7 @@ class TweetStoreTest extends TestCase
             'password' => 'secret1234',
         ]);
 
-        return $response['access_token'];
+        return $response['data']['access_token'];
     }
 
     /** @test */
@@ -38,7 +39,8 @@ class TweetStoreTest extends TestCase
             'content' => 'My first tweet for testing!'
         ]);
         $response->assertStatus(200);
-        $this->assertArrayHasKey('success', $response->json());
+        $this->assertArraySubset(['status' => 'success'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -48,8 +50,9 @@ class TweetStoreTest extends TestCase
         $response = $this->json('POST',route('tweet.create'),[
             'content' => 'My first tweet for testing!'
         ]);
-        $response->assertStatus(401);
-        $this->assertArrayHasKey('message', $response->json());
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -63,7 +66,8 @@ class TweetStoreTest extends TestCase
         ])->json('POST',route('tweet.create'),[
             'content' => str_repeat('a', 141)
         ]);
-        $response->assertStatus(422);
-        $this->assertArrayHasKey('errors', $response->json());
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 }

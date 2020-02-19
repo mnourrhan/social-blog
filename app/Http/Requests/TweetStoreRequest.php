@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class TweetStoreRequest extends FormRequest
 {
@@ -39,5 +41,9 @@ class TweetStoreRequest extends FormRequest
             'content.required' => 'Tweet content is required!',
             'content.max' => 'Tweet length limit exceed! The max limit is 140 character.',
         ];
+    }
+
+    protected function failedValidation(Validator $validator) {
+        throw new HttpResponseException(jsend_fail($validator->errors()->all()));
     }
 }

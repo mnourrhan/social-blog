@@ -50,4 +50,24 @@ class User extends Authenticatable implements JWTSubject
     public function tweets() {
         return $this->hasMany('App\Models\Tweet');
     }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'followed_id', 'follower_id');
+    }
+
+    public function followings()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'follower_id', 'followed_id');
+    }
+
+    public function isFollowing(User $user)
+    {
+        return $this->followings()->where('followed_id', $user->id)->count();
+    }
+
+    public function isFollowedBy(User $user)
+    {
+        return $this->followers()->where('follower_id', $user->id)->count();
+    }
 }

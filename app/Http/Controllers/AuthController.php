@@ -7,6 +7,8 @@ use App\Http\Requests\UserRegisterRequest;
 use App\Models\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use App\Repositories\Repository;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Log;
 
 
@@ -53,11 +55,10 @@ class AuthController extends Controller
 
                 return $this->respond_with_token($token);
             }
-            return $validated;
         }catch(\Exception $ex){
             Log::info("Error occurred while registering");
             Log::info($ex);
-            return response()->json(['error' => 'Invalid data'], 500);
+            return jsend_fail(['error' => 'The data you have entered is invalid!']);
         }
     }
 
@@ -75,12 +76,11 @@ class AuthController extends Controller
             $credentials = $request->only(['email', 'password']);
             if (!$token = auth()->attempt($credentials)) {
                 $this->incrementLoginAttempts($request);
-                return response()->json(['error' => 'Incorrect username or password'], 401);
+                return jsend_fail(['error' => 'Incorrect username or password']);
             }
             $this->clearLoginAttempts($request);
             return $this->respond_with_token($token);
         }
-        return $validated;
     }
 
     protected function save_user_image($request){
@@ -96,27 +96,34 @@ class AuthController extends Controller
 
     protected function respond_with_token($token)
     {
-        return response()->json([
+        $data = [
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
+        ];
+        return jsend_success($data);
     }
 
 
-//    /**
-//     * Determine if the user has too many failed login attempts.
-//     *
-//     * @param  \Illuminate\Http\Request  $request
-//     * @return bool
-//     */
-//    protected function hasTooManyLoginAttempts(Request $request)
-//    {
-//        $maxLoginAttempts = 5;
-//        $lockoutTime = 2; // In minutes
-//
-//        return $this->limiter()->tooManyAttempts(
-//            $this->throttleKey($request), $maxLoginAttempts, $lockoutTime
-//        );
-//    }
+    /**
+     * Redirect the user after determining they are locked out.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function sendLockoutResponse(Request $request)
+    {
+        $seconds = $this->limiter()->availableIn(
+            $this->throttleKey($request)
+        );
+
+        return jsend_fail([
+            $this->username() => [Lang::get('auth.throttle', [
+                'seconds' => $seconds,
+                'minutes' => ceil($seconds / 60),
+            ])],
+        ]);
+    }
 }

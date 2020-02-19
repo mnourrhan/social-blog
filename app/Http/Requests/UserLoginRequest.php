@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UserLoginRequest extends FormRequest
 {
@@ -41,5 +43,9 @@ class UserLoginRequest extends FormRequest
             'email.regex' => 'Invalid email! Please enter a valid one',
             'password.required' => 'Password is required!',
         ];
+    }
+
+    protected function failedValidation(Validator $validator) {
+        throw new HttpResponseException(jsend_fail($validator->errors()->all()));
     }
 }

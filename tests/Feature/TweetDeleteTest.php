@@ -4,12 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Tweet;
 use App\Models\User;
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class TweetDeleteTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, ArraySubsetAsserts;
 
     protected function authenticate(){
         $user = factory(User::class)->create([
@@ -25,7 +26,7 @@ class TweetDeleteTest extends TestCase
         ]);
 
 
-        return $response['access_token'];
+        return $response['data']['access_token'];
     }
 
     /** @test */
@@ -43,7 +44,27 @@ class TweetDeleteTest extends TestCase
         ])->json('POST',route('tweet.delete', $tweet->id));
 
         $response->assertStatus(200);
-        $this->assertArrayHasKey('success', $response->json());
+        $this->assertArraySubset(['status' => 'success'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
+    }
+
+    /** @test */
+    public function test_user_cant_delete_not_exist_tweet()
+    {
+        $token = $this->authenticate();
+        $tweet = factory(Tweet::class)->create([
+            'content' => 'My first tweet for testing!',
+            'user_id' => auth()->user()->id
+        ]);
+
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '. $token,
+            'Accept' => 'application/json',
+        ])->json('POST',route('tweet.delete', 5550));
+
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -63,8 +84,9 @@ class TweetDeleteTest extends TestCase
 
         $response = $this->json('POST',route('tweet.delete', $tweet->id));
 
-        $response->assertStatus(401);
-        $this->assertArrayHasKey('message', $response->json());
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
     /** @test */
@@ -88,8 +110,9 @@ class TweetDeleteTest extends TestCase
             'Accept' => 'application/json',
         ])->json('POST',route('tweet.delete', $tweet->id));
 
-        $response->assertStatus(402);
-        $this->assertArrayHasKey('errors', $response->json());
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 
 }

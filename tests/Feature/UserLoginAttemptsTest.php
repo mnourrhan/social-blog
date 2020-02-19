@@ -3,12 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class UserLoginAttemptsTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, ArraySubsetAsserts;
 
     /** @test */
     public function it_user_locked_after_5_login_wrong_attempts()
@@ -25,8 +26,8 @@ class UserLoginAttemptsTest extends TestCase
                 'password' => 'secret123',
             ]);
         }
-        $response->assertStatus(429);
-        $this->assertArrayHasKey('errors', $response->json());
-
+        $response->assertStatus(400);
+        $this->assertArraySubset(['status' => 'fail'], $response->json());
+        $this->assertArrayHasKey('data', $response->json());
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UserRegisterRequest extends FormRequest
 {
@@ -48,5 +50,9 @@ class UserRegisterRequest extends FormRequest
             'birth_date.required' => 'Birth date is required!',
             'image.mimes' => 'The allowed image types are jpg and png only!'
         ];
+    }
+
+    protected function failedValidation(Validator $validator) {
+        throw new HttpResponseException(jsend_fail($validator->errors()->all()));
     }
 }
