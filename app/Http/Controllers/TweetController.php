@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TweetStoreRequest;
 use App\Models\tweet;
 use App\Repositories\Repository;
+use Illuminate\Support\Facades\Log;
 
 class TweetController extends Controller
 {
@@ -19,7 +20,7 @@ class TweetController extends Controller
 
     public function show()
     {
-        $following = auth()->user()->followings()->select('followed_id')->get();
+        $following = auth()->user()->followings()->get()->pluck('followed_id')->toArray();
         $following[] = auth()->user()->id;
         $tweets = Tweet::whereIn('user_id',$following)->orderBy('created_at','desc')->paginate(7);
         return jsend_success($tweets);
@@ -44,9 +45,9 @@ class TweetController extends Controller
                 $this->model->delete($id);
                 return jsend_success(['message' => 'Tweet successfully deleted!']);
             } else {
-                return jsend_fail(['errors' => 'Permission Denied! You are not authorized to preform this action.']);
+                return jsend_fail(['message' => 'Permission Denied! You are not authorized to preform this action.']);
             }
         }
-        return jsend_fail(['errors' => 'The tweet your are trying to delete not exist!']);
+        return jsend_fail(['message' => 'The tweet your are trying to delete not exist!']);
     }
 }

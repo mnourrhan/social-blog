@@ -58,7 +58,7 @@ class AuthController extends Controller
         }catch(\Exception $ex){
             Log::info("Error occurred while registering");
             Log::info($ex);
-            return jsend_fail(['error' => 'The data you have entered is invalid!']);
+            return jsend_fail(['message' => 'The data you have entered is invalid!']);
         }
     }
 
@@ -76,7 +76,7 @@ class AuthController extends Controller
             $credentials = $request->only(['email', 'password']);
             if (!$token = auth()->attempt($credentials)) {
                 $this->incrementLoginAttempts($request);
-                return jsend_fail(['error' => 'Incorrect username or password']);
+                return jsend_fail(['message' => 'Incorrect username or password']);
             }
             $this->clearLoginAttempts($request);
             return $this->respond_with_token($token);

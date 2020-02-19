@@ -1,78 +1,296 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
+# social-blog API
+[social-blog](https://github.com/mnourrhan/social-blog) API - Micro blogging social network service built with Laravel framework on which users post and interact with messages known as "tweets". Users can post tweets and only the followers of them can see that tweets.
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+## Installation
+- Clone the repo
+- Run "php artisan config:cache"
+- Run the scripts exist in/database/migration/database-init.sql with replacing the db server
+- Change the .env.local file DB_HOST with your local host.
+- Run "php artisan migrate"
+- You can run "vendor/bin/phpunit" for testing the APIs
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Authentication
+Aside from the initial call to the `/sessions` endpoint, `POST`, `PATCH`, `DELETE` and sensitive `GET` requests will need to be authenticated.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+An `Authorization: Basic` header with a Base64 encoding of `access_token`, where `access_token` is retrieved from the JWT authentication.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Media Types
+This API uses the JSON format, given limited client support `Content-Type` and `Accept` should still be set to `application/json`.
 
-## Learning Laravel
+Requests with a message-body are using plain JSON to set or update resource states.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Error States
+statu with fail value will be returned when error occur
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Specifally, this API uses:
 
-## Laravel Sponsors
+- 200: "Successful", often return from a GET/POST request
+- 400: "Failed", often return from a GET/POST request
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+# User Auth
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
-- [Appoly](https://www.appoly.co.uk)
-- [OP.GG](https://op.gg)
+## User Register [/register]
+A single User object.
 
-## Contributing
+The User resource has the following attributes: 
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- id
+- email
+- name
+- birth_date
+- password
+- image_name
+- created_at
+- updated_at
 
-## Code of Conduct
+The states *id*, *created_at* and *updated_at* are assigned by the API at the moment of creation. 
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
++ Request (application/json)
 
-## Security Vulnerabilities
+    + Headers
+        
+            Accept: application/json
+         
+    + Body
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+            {
+                "name": "user",
+                "email": "user@test.com",
+                "password": "12345678",
+                "birth_date": "1990-10-02",
+                "image": ** type is file **
+            }
 
-## License
++ Response 200
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+        {
+            "status": "success",
+            "data": {
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMFwvYXBpXC9yZWdpc3RlciIsImlhdCI6MTU4MjA4NTczOSwiZXhwIjoxNTgyMDg5MzM5LCJuYmYiOjE1ODIwODU3MzksImp0aSI6IjIyMXpBMHludnpsVTkxRVgiLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.C4pp9epzwi-OGjS11_RqVC6yzLMJa44VwjN5YSEPzxo",
+                "token_type": "bearer",
+                "expires_in": 3600
+            }
+        }
+        
++ Response 400    
+        {
+            "status": "fail",
+            "data": [
+                "Password is required!"
+            ]
+        }
+
+### User Login [/login]
++ Request (application/json)
+
+    + Headers
+        
+            Accept: application/json
+         
+    + Body
+
+            {
+                "email": "user@test.com",
+                "password": "12345678",
+            }
+
++ Response 200
+
+        {
+            "status": "success",
+            "data": {
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMFwvYXBpXC9sb2dpbiIsImlhdCI6MTU4MjA3OTk0NCwiZXhwIjoxNTgyMDgzNTQ0LCJuYmYiOjE1ODIwNzk5NDQsImp0aSI6IkdDeXRPRUU3Y2RWMFoxbW4iLCJzdWIiOjMsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.myH2uIdoVFksH3AkaU4stC_ljrUYg1LeuSwNwAiQGJQ",
+                "token_type": "bearer",
+                "expires_in": 3600
+            }
+        }
+
++ Response 400
+
+        {
+            "status": "fail",
+            "data": {
+                "message": "Incorrect username or password"
+            }
+        }
+
+# Tweet Resources
+
+## Store Tweet [/tweet/create]
+
++ Request (application/json)
+
+    + Headers
+        
+            Accept: application/json
+            Authorization: Bearer +$token
+         
+    + Body
+
+            {
+                "content": "testing tweet",
+            }
+
++ Response 200
+
+        {
+            "status": "success",
+            "data": {
+                "content": "testing tweet",
+                "user_id": 2,
+                "updated_at": "2020-02-19 06:00:44",
+                "created_at": "2020-02-19 06:00:44",
+                "id": 1
+            }
+        }
+
++ Response 400
+
+        {
+            "status": "fail",
+            "data": [
+                "Tweet content is required!"
+            ]
+        }
+
+
+## Delete Tweet [/tweet/delete/{id}]
+
++ Request (application/json)
+
+    + Headers
+        
+            Accept: application/json
+            Authorization: Bearer +$token
+         
+    + Body
+
+            {
+            }
+
++ Response 200
+
+        {
+            "status": "success",
+            "data": {
+                "message": "Tweet successfully deleted!"
+            }
+        }
+
++ Response 400
+
+        {
+            "status": "fail",
+            "data": {
+                "message": "The tweet your are trying to delete not exist!"
+            }
+        }
+
+## User Tweets[/timeline]
+
++ Request (application/json)
+
+    + Headers
+        
+            Accept: application/json
+            Authorization: Bearer +$token
+         
+    + Body
+
+            {
+            }
+
++ Response 200
+
+        {
+            "status": "success",
+            "data": {
+                "message": "Successfully unfollowed the user!"
+            }
+        }
+
++ Response 400
+
+        {
+            "status": "fail",
+            "data": {
+                "message": "You can't unfollow your account as you already can see your tweets!"
+            }
+        }
+        
+# User Follow/UnFollow
+
+## Follow User [/user/follow/{id}]
+
++ Request (application/json)
+
+    + Headers
+        
+            Accept: application/json
+            Authorization: Bearer +$token
+         
+    + Body
+
+            {
+            }
+
++ Response 200
+
+        {
+            "status": "success",
+            "data": {
+                "message": "Successfully followed the user!"
+            }
+        }
+
++ Response 400
+
+        {
+            "status": "fail",
+            "data": {
+                "message": "You can't follow your account as you already can see your tweets!"
+            }
+        }
+        
+## UnFollow User [/user/unfollow/{id}]
+
++ Request (application/json)
+
+    + Headers
+        
+            Accept: application/json
+            Authorization: Bearer +$token
+         
+    + Body
+
+            {
+            }
+
++ Response 200
+
+        {
+            "status": "success",
+            "data": {
+                "current_page": 1,
+                "data": [
+                    {
+                        "id": 2,
+                        "content": "Testing tweet",
+                        "user_id": "2",
+                        "created_at": "2020-02-19 06:13:10",
+                        "updated_at": "2020-02-19 06:13:10"
+                    }
+                ],
+                "first_page_url": "http://127.0.0.1:8000/api/timeline?page=1",
+                "from": 1,
+                "last_page": 1,
+                "last_page_url": "http://127.0.0.1:8000/api/timeline?page=1",
+                "next_page_url": null,
+                "path": "http://127.0.0.1:8000/api/timeline",
+                "per_page": 7,
+                "prev_page_url": null,
+                "to": 1,
+                "total": 1
+            }
+        }
