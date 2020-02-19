@@ -17,6 +17,14 @@ class TweetController extends Controller
         $this->model = new Repository($tweet);
     }
 
+    public function show()
+    {
+        $following = auth()->user()->followings()->select('followed_id')->get();
+        $following[] = auth()->user()->id;
+        $tweets = Tweet::whereIn('user_id',$following)->orderBy('created_at','desc')->paginate(7);
+        return jsend_success($tweets);
+    }
+
     public function store(TweetStoreRequest $request)
     {
         $data = $request->all();

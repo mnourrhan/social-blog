@@ -16,13 +16,13 @@ class UserLoginAttemptsTest extends TestCase
     {
         $user = factory(User::class)->create([
             'name' => 'test',
-            'email'=>'test@gmail.com',
+            'email'=>'testing@gmail.com',
             'password' => 'secret1234',
             'birth_date' => '1990-10-09',
         ]);
         foreach(range(0,5) as $index) {
             $response = $this->json('POST',route('api.login'),[
-                'email' => 'test@gmail.com',
+                'email' => 'testing@gmail.com',
                 'password' => 'secret123',
             ]);
         }
