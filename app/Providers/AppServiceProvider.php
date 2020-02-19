@@ -30,9 +30,5 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
         User::observe(UserObserver::class);
-        Dotenv::create(base_path(), '.env.' . $this->app->environment())->overload();
-        Dotenv::create(base_path(), '.env.test')->overload();
-
-
     }
 }

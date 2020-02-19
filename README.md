@@ -4,8 +4,11 @@
 ## Installation
 - Clone the repo
 - Run "php artisan config:cache"
+- Run "php artisan config:clear"
 - Run the scripts exist in/database/migration/database-init.sql with replacing the db server
-- Change the .env.local file DB_HOST with your local host.
+- Change the .env file DB_HOST with your local host and your DB configuration.
+- Run "php artisan config:cache"
+- Run "php artisan config:clear"
 - Run "php artisan migrate"
 - You can run "vendor/bin/phpunit" for testing the APIs
 
